@@ -1,4 +1,4 @@
-# Concox Device Adapter
+# Concox Device Simulator
 
 ## Overview
 
