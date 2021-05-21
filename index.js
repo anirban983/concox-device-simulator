@@ -1,17 +1,24 @@
+"use-strict";
+
 const axios = require('axios');
-axios.defaults.baseURL = 'http://127.0.0.1:3000';
+const config = require('config');
 
-const loginPacket = "78 78 11 01 03 51 60 80 80 77 92 88 22 03 32 01 01 AA 53 36 0D 0A"
-const heartbeatPacket = "78 78 0B 23 C0 01 22 04 00 01 00 08 18 72 0D 0A"
-const gpsLocationPacket = "78 78 22 22 0F 0C 1D 02 33 05 C9 02 7A C8 18 0C 46 58 60 00 14 00 01 CC 00 28 7D 00 1F 71 00"
+// setting axios default base url
+axios.defaults.baseURL = config.adapterURL
 
+// setting default packet values
+const loginPacket = config.loginPacket
+const heartbeatPacket = config.heartbeatPacket
+const gpsLocationPacket = config.gpsLocationPacket
+
+// function to make heartbeat request
 const makeHearbeatRequest = async () => {
     console.log('Sending Hearbeat Packet: ' + '"' + heartbeatPacket + '"')
     axios.post('/api/heartbeat', { heartbeatPacket })
     .then(async function (response) {
         console.log('Connection established')
         console.log('Heartbeat Packet Response: ' + '"' + response.data + '"');
-        await makeHearbeatRequest()
+        await makeHearbeatRequest() // continues to make heartbeat request
     })
     .catch(function (error) {
         console.log('Connection failed')
@@ -19,6 +26,7 @@ const makeHearbeatRequest = async () => {
     });
 }
 
+// function to make gps location request
 const makeGpsLocationRequest = async () => {
     console.log('Sending GPS Location Packet: ' + '"' + gpsLocationPacket + '"')
     await axios.post('/api/gps-location', { gpsLocationPacket })
@@ -32,14 +40,15 @@ const makeGpsLocationRequest = async () => {
     });
 }
 
+// function to make login request
 const makeLoginRequest = async () => {
     console.log('Sending Login Packet: ' + '"' + loginPacket + '"')
     await axios.post('/api/login', { loginPacket })
     .then(async function (response) {
         console.log('Connection established')
         console.log('Login Packet Response: ' + '"' + response.data + '"');
-        await makeHearbeatRequest()
-        await makeGpsLocationRequest()
+        await makeHearbeatRequest() // make heartbeat request on successful login connection
+        await makeGpsLocationRequest() // make gps location request on successful login connection
     })
     .catch(function (error) {
         console.log('Connection failed')
@@ -47,9 +56,10 @@ const makeLoginRequest = async () => {
     });
 }
 
+// function to connect to the device adapter
 const connectToServer = async () => {
     while (true) {
-        await makeLoginRequest()
+        await makeLoginRequest() // continues to send login request
     }
 }
 
